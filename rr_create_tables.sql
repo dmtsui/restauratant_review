@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS chefs (
+	id INTEGER PRIMARY KEY,
+	first_name VARCHAR(255) NOT NULL,
+	last_name VARCHAR(255) NOT NULL,
+	mentor INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS restaurants (
+	id INTEGER PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+	neighborhood VARCHAR(255) NOT NULL,
+	cuisine VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cheftenure (
+	chef_id INTEGER NOT_NULL,
+	restaurant_id INTEGER NOT NULL,
+	FORIEGN KEY(chef_id) REFERENCES chefs(id)
+	FOREIGN KEY(restaurant_id) REFERENCES restaurants(id)
+);
