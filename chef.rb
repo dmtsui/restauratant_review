@@ -1,7 +1,7 @@
 require './model'
 require 'debugger'
 class Chef < Model
-	attr_accessor :first_name, :last_name, :mentor
+	attr_accessible :first_name, :last_name, :mentor
 
 	COLUMNS = ['first_name','last_name','mentor']
 	TABLE = 'chefs'

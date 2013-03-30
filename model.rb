@@ -28,32 +28,18 @@ class Model
     	params_array.map {|params| self.new(params) }
 	end
 
-	def self.attr_accessible(method_names)
-		column
-	    
+	def self.attr_accessible(*method_names)	    
 		method_names.each do |method_name|
-			get = Proc.new{self.instance_variable_get(method_name)}
+			get = Proc.new{self.instance_variable_get("@#{method_name}")}
 			self.send(:define_method, method_name,&get)
-			
-		    set_name = "#{method_name}=".to_s
-		    set = Proc.new {|var| self.instance_variable_set(method_name, var)}
-		    self.send(:define_method, set_name,&set)
+		
+		    set = Proc.new {|var| self.instance_variable_set("@#{method_name}", var)}
+		    self.send(:define_method, "#{method_name}=".to_sym ,&set)
 		end
 
+		self.class_variable_set(:@@column_name,[*method_names])
+		get = Proc.new{self.class_variable_get(:@@column_name)}	
 	end
-
-	def set_factory(method_name)
-		get = Proc.new{self.instance_variable_get(method_name)}
-		self.send(:define_method, method_name,&get)
-
-	    set_name = "#{method_name}=".to_s
-	    set = Proc.new {|var| self.instance_variable_set(method_name, var)}
-	    self.send(:define_method, set_name,&set)
-	    
-		
-	end
-
-
 
 	def save(*params)
 	    if id
