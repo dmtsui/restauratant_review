@@ -24,6 +24,17 @@ class Critic < Model
 		(all_scores.inject(0){|sum,i| sum+i} / all_scores.count) || 0
 	end
 
+	def unreviewed_restaurants
+		Restaurant.multi_query( <<-SQL, id)
+			SELECT DISTINCT r.*
+			  FROM restaurants r
+			 WHERE r.id NOT IN (SELECT a.id
+			   					  FROM restaurants a JOIN restaurant_reviews bb
+			   					    ON a.id == bb.restaurant_id
+			   					 WHERE bb.critic_id == ?)
+		SQL
+	end
+
 	def save
 		super(screen_name)
 		self

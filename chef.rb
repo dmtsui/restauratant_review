@@ -31,19 +31,27 @@ class Chef < Model
 			FROM chefs c JOIN chef_tenures ct
 			  ON c.id = ct.chef_id
 			JOIN 
-			(SELECT chef_id, restaurant_id, julianday(start_date) AS start,
-				(CASE WHEN end_date IS NULL 
-					  THEN julianday() 
-					  ELSE julianday(end_date) END) AS end
-			   FROM chef_tenures
-			  WHERE chef_id = ?) as current
+			(SELECT chef_id, restaurant_id, julianday(start_date) AS start,			
+			   	COALESCE(julianday(end_date),julianday()) AS end
+			   		FROM chef_tenures
+			  	   WHERE chef_id = ?) as current
 			  ON ct.restaurant_id = current.restaurant_id
-			WHERE c.id != current.chef_id
-			  AND ((julianday(ct.start_date) BETWEEN current.start AND current.end)
-			  	    OR
-			  	   ((CASE WHEN ct.end_date IS NULL 
-					  THEN julianday() 
-					  ELSE julianday(ct.end_date) END) BETWEEN current.start AND current.end))
+		   WHERE c.id != current.chef_id
+			 AND ((julianday(ct.start_date) BETWEEN current.start AND current.end)
+			  	 OR			  	 
+			  	 (COALESCE(julianday(ct.end_date),julianday()) BETWEEN current.start AND current.end))
+		SQL
+	end
+
+	def reviews
+		Review.multi_query(<<-SQL, id)
+			SELECT rr.*
+			  FROM chef_tenures ct JOIN restaurants r
+			    ON ct.restaurant_id = r.id
+			  JOIN restaurant_reviews rr
+			  	ON rr.restaurant_id = r.id
+			 WHERE ct.chef_id = ?
+			   AND ct.is_head_chef = 1
 		SQL
 	end
 

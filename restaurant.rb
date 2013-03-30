@@ -21,6 +21,27 @@ class Restaurant < Model
 		@cuisine = options['cuisine']
 	end
 
+	def self.top_restaurants(n)
+		multi_query(<<-SQL, n)
+			SELECT r.*
+			  FROM restaurants r JOIN restaurant_reviews rr
+			    ON r.id = rr.restaurant_id
+			 GROUP BY r.id
+			 ORDER BY AVG(rr.score) DESC
+			 LIMIT ?
+		SQL
+	end
+
+	def self.highly_reviewed_restaurants(min)
+		multi_query(<<-SQL, min)
+			SELECT r.*
+			  FROM restaurants r JOIN restaurant_reviews rr
+			    ON r.id = rr.restaurant_id
+			 GROUP BY r.id
+			HAVING COUNT(rr.score) >= ?		
+		SQL
+	end
+
 	def save
 		super(name, neighborhood, cuisine)
 		self
